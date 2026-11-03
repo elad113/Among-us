@@ -38,14 +38,13 @@ class OverlayService : Service() {
     private val poll = object : Runnable {
         override fun run() {
             val nowFront = foregroundPackage() == gamePackage
-            if (nowFront != gameIsFront) {
-                gameIsFront = nowFront
-                if (gameIsFront) {
-                    showBubble()
-                    if (prefs.getBoolean("panel_open", false)) showPanel()
-                } else {
-                    hideViewsOnly()
-                }
+            // Once Among Us has appeared, keep the overlay attached through
+            // login/account hand-offs and intermediate activities. UsageStats
+            // can briefly report another package during these transitions.
+            if (nowFront && !gameIsFront) {
+                gameIsFront = true
+                showBubble()
+                if (prefs.getBoolean("panel_open", false)) showPanel()
             }
             handler.postDelayed(this, 700)
         }
