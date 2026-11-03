@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     <queries>
@@ -6,7 +5,7 @@
     </queries>
     <application
         android:theme="@style/AppTheme"
-        android:label="Lokiz Mods"
+        android:label="Among Us Companion"
         android:allowBackup="false"
         android:supportsRtl="true">
         <activity android:name=".MainActivity" android:exported="true">

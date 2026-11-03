@@ -15,41 +15,41 @@ import android.widget.Toast
 
 class MainActivity : Activity() {
     private val gamePackage = "com.innersloth.spacemafia"
-    private val bg = Color.rgb(17, 18, 24)
-    private val red = Color.rgb(218, 42, 69)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.statusBarColor = bg
-        window.navigationBarColor = bg
+        window.statusBarColor = Color.rgb(16, 16, 20)
+        window.navigationBarColor = Color.rgb(16, 16, 20)
+
         val page = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
-            setPadding(28, 42, 28, 28)
-            setBackgroundColor(bg)
+            setPadding(28, 48, 28, 28)
+            setBackgroundColor(Color.rgb(16, 16, 20))
         }
         page.addView(TextView(this).apply {
-            text = "LOKIZ MODS"
+            text = "AMONG US"
             textSize = 30f
             setTextColor(Color.WHITE)
             gravity = Gravity.CENTER
-            typeface = android.graphics.Typeface.DEFAULT_BOLD
         }, matchWrap())
         page.addView(TextView(this).apply {
-            text = "AMONG US • FLOATING MENU"
-            textSize = 12f
+            text = "COMPANION LAUNCHER  •  ANDROID"
+            textSize = 13f
             setTextColor(Color.LTGRAY)
             gravity = Gravity.CENTER
-            setPadding(0, 6, 0, 30)
+            setPadding(0, 8, 0, 32)
         }, matchWrap())
 
-        page.addView(actionButton("ENABLE MENU & LAUNCH AMONG US") { launchWithMenu() }, matchWrap())
-        page.addView(actionButton("OPEN OVERLAY SETTINGS") { requestOverlayPermission() }, matchWrap())
+        page.addView(actionButton("LAUNCH OFFICIAL AMONG US") { launchGame() }, matchWrap())
+        page.addView(actionButton("ENABLE FLOATING MENU") { enableOverlay() }, matchWrap())
+        page.addView(actionButton("OPEN MENU PREVIEW") { startOverlay() }, matchWrap())
+
         page.addView(TextView(this).apply {
-            text = "No Usage Access permission is needed. The floating panel stays on screen until you close it from the panel. This is an overlay shell; game-data features still need a compatible in-game plugin and are not active yet."
+            text = "Companion overlay\nThe floating panel provides companion-only controls and notes. Android does not allow this separate app to inject code into Among Us or change public-match game state."
             textSize = 13f
-            setTextColor(Color.rgb(190, 190, 202))
-            setPadding(4, 24, 4, 0)
+            setTextColor(Color.rgb(190, 190, 200))
+            setPadding(4, 28, 4, 0)
         }, matchWrap())
         setContentView(page)
     }
@@ -61,33 +61,31 @@ class MainActivity : Activity() {
     private fun actionButton(label: String, action: () -> Unit) = Button(this).apply {
         text = label
         isAllCaps = false
-        textSize = 15f
         setTextColor(Color.WHITE)
-        setBackgroundColor(red)
+        setBackgroundColor(Color.rgb(190, 38, 54))
         setOnClickListener { action() }
     }
 
-    private fun requestOverlayPermission() {
-        if (!Settings.canDrawOverlays(this)) {
-            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
-        } else {
-            Toast.makeText(this, "Overlay permission is already enabled.", Toast.LENGTH_SHORT).show()
-        }
+    private fun launchGame() {
+        val intent = packageManager.getLaunchIntentForPackage(gamePackage)
+        if (intent == null) {
+            Toast.makeText(this, "Install Among Us from Google Play first.", Toast.LENGTH_LONG).show()
+        } else startActivity(intent)
     }
 
-    private fun launchWithMenu() {
+    private fun enableOverlay() {
         if (!Settings.canDrawOverlays(this)) {
-            requestOverlayPermission()
-            Toast.makeText(this, "Allow display over other apps, then tap Launch again.", Toast.LENGTH_LONG).show()
-            return
-        }
-        val launch = packageManager.getLaunchIntentForPackage(gamePackage)
-        if (launch == null) {
-            Toast.makeText(this, "Install the official Among Us app from Google Play first.", Toast.LENGTH_LONG).show()
+            startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
+        } else startOverlay()
+    }
+
+    private fun startOverlay() {
+        if (!Settings.canDrawOverlays(this)) {
+            Toast.makeText(this, "Allow display over other apps first.", Toast.LENGTH_LONG).show()
+            enableOverlay()
             return
         }
         startService(Intent(this, OverlayService::class.java))
-        launch.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        startActivity(launch)
+        Toast.makeText(this, "Floating companion menu enabled.", Toast.LENGTH_SHORT).show()
     }
 }
