@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "source": "assets/FEATURE-MANIFEST.json extracted from uploaded CrewCore_ModLoader-vc67.apk",
+  "variant": "googleGameAuthInternal",
+  "distributionClass": "development",
+  "applicationId": "dev.crewcore.modloader.v3",
+  "features": {
+    "crewcoreGoogle": false,
+    "crewcoreItch": false,
+    "googleGameAuth": true
+  },
+  "sourceModules": ["account-common", "googlemerge", "authbridge-google"],
+  "expectedLeaves": {
+    "dexMarkers": [
+      "dev/crewcore/v3/accounts/AccountOperation",
+      "dev/crewcore/v3/accounts/googlemerge/GoogleMergeImporter"
+    ],
+    "nativeLibraries": [
+      "libcrewcore_fengine_v3.so",
+      "libcrewcore_authbridge_google.so"
+    ],
+    "dependencies": ["dobby@0932d69c320e786672361ab53825ba8f4245e9d3"]
+  },
+  "authorization": {
+    "requiredStatus": "NOT_REQUIRED",
+    "currentStatus": "UNVERIFIED",
+    "buildPermitted": true,
+    "publicDistributionPermitted": true
+  }
+}
