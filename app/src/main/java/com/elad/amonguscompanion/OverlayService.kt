@@ -1,9 +1,6 @@
 package com.elad.amonguscompanion
 
-import android.app.AppOpsManager
 import android.app.Service
-import android.app.usage.UsageEvents
-import android.app.usage.UsageStatsManager
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.PixelFormat
@@ -22,50 +19,16 @@ import android.widget.TextView
 import kotlin.math.abs
 
 class OverlayService : Service() {
-    private val gamePackage = "com.innersloth.spacemafia"
     private val handler = Handler(Looper.getMainLooper())
     private lateinit var wm: WindowManager
     private var bubble: TextView? = null
     private var panel: LinearLayout? = null
-    private var gameIsFront = false
     private var selectedTab = "Utility"
-
-    private val poll = object : Runnable {
-        override fun run() {
-            val nowFront = foregroundPackage() == gamePackage
-            if (nowFront != gameIsFront) {
-                gameIsFront = nowFront
-                if (!gameIsFront) hideAll() else showBubble()
-            }
-            handler.postDelayed(this, 700)
-        }
-    }
 
     override fun onCreate() {
         super.onCreate()
         wm = getSystemService(WINDOW_SERVICE) as WindowManager
-        handler.post(poll)
-    }
-
-    private fun foregroundPackage(): String? {
-        val ops = getSystemService(APP_OPS_SERVICE) as AppOpsManager
-        val mode = ops.checkOpNoThrow("android:get_usage_stats", android.os.Process.myUid(), packageName)
-        if (mode != AppOpsManager.MODE_ALLOWED) return null
-        val usm = getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
-        val end = System.currentTimeMillis()
-        val events = usm.queryEvents(end - 5000, end)
-        val event = UsageEvents.Event()
-        var latest: String? = null
-        var latestTime = 0L
-        while (events.hasNextEvent()) {
-            events.getNextEvent(event)
-            if ((event.eventType == UsageEvents.Event.MOVE_TO_FOREGROUND ||
-                 event.eventType == UsageEvents.Event.ACTIVITY_RESUMED) && event.timeStamp >= latestTime) {
-                latestTime = event.timeStamp
-                latest = event.packageName
-            }
-        }
-        return latest
+        showBubble()
     }
 
     private fun params(width: Int, height: Int) = WindowManager.LayoutParams(
@@ -76,7 +39,7 @@ class OverlayService : Service() {
     ).apply { gravity = Gravity.TOP or Gravity.START; x = 18; y = 180 }
 
     private fun showBubble() {
-        if (!gameIsFront || bubble != null) return
+        if (bubble != null) return
         val view = TextView(this).apply {
             text = "LM"
             textSize = 14f
@@ -111,7 +74,6 @@ class OverlayService : Service() {
 
     private fun togglePanel() {
         panel?.let { try { wm.removeView(it) } catch (_: Exception) {}; panel=null; return }
-        if (!gameIsFront) return
         panel = buildPanel()
         wm.addView(panel, params(dp(340), dp(430)).apply { x=dp(64); y=dp(92) })
     }
@@ -130,8 +92,9 @@ class OverlayService : Service() {
             setBackgroundColor(0xFF28151D.toInt()); setPadding(dp(8),dp(7),dp(8),dp(7))
         }
         header.addView(label("LOKIZ MODS", 15, Color.WHITE, true), LinearLayout.LayoutParams(0, dp(38), 1f))
-        header.addView(label("—", 20, 0xFFFF657A.toInt(), true).apply {
-            gravity=Gravity.CENTER; setOnClickListener { panel?.let { wm.removeView(it) }; panel=null }
+        header.addView(label("×", 20, 0xFFFF657A.toInt(), true).apply {
+            gravity=Gravity.CENTER
+            setOnClickListener { stopSelf() }
         }, LinearLayout.LayoutParams(dp(34),dp(38)))
         root.addView(header)
 
@@ -178,7 +141,7 @@ class OverlayService : Service() {
                 page.addView(info("Private-lobby mod integration will be added only after a compatible Android plugin interface is available."))
             }
             "Players" -> { page.addView(section("PLAYER DATA")); page.addView(info("Live player names and roles are not available to this overlay. No roles are guessed or fabricated.")) }
-            "Dashboard" -> { page.addView(info("Lokiz Mods is visible only while Among Us is in the foreground. Tap the red LM bubble to open this panel.")) }
+            "Dashboard" -> { page.addView(info("The floating Lokiz Mods panel stays active until you close it with the × button. Tap the red LM bubble to open or hide the panel.")) }
             else -> { page.addView(info("$selectedTab settings will appear here when implemented.")) }
         }
         return page
@@ -213,7 +176,6 @@ class OverlayService : Service() {
     }
 
     override fun onDestroy() {
-        handler.removeCallbacks(poll)
         hideAll()
         super.onDestroy()
     }
