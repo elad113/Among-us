@@ -36,17 +36,17 @@ class MainActivity : Activity() {
             typeface = android.graphics.Typeface.DEFAULT_BOLD
         }, matchWrap())
         page.addView(TextView(this).apply {
-            text = "AMONG US • ANDROID LOADER"
+            text = "AMONG US • FLOATING MENU"
             textSize = 12f
             setTextColor(Color.LTGRAY)
             gravity = Gravity.CENTER
             setPadding(0, 6, 0, 30)
         }, matchWrap())
 
-        page.addView(actionButton("LAUNCH AMONG US") { launchWithMenu() }, matchWrap())
-        page.addView(actionButton("SET UP GAME-ONLY MENU") { setupPermissions() }, matchWrap())
+        page.addView(actionButton("ENABLE MENU & LAUNCH AMONG US") { launchWithMenu() }, matchWrap())
+        page.addView(actionButton("OPEN OVERLAY SETTINGS") { requestOverlayPermission() }, matchWrap())
         page.addView(TextView(this).apply {
-            text = "The Lokiz panel is shown only while Among Us is the foreground app. This build is an overlay shell; game-data features need a compatible in-game mod interface and are not active yet."
+            text = "No Usage Access permission is needed. The floating panel stays on screen until you close it from the panel. This is an overlay shell; game-data features still need a compatible in-game plugin and are not active yet."
             textSize = 13f
             setTextColor(Color.rgb(190, 190, 202))
             setPadding(4, 24, 4, 0)
@@ -67,32 +67,18 @@ class MainActivity : Activity() {
         setOnClickListener { action() }
     }
 
-    private fun setupPermissions() {
+    private fun requestOverlayPermission() {
         if (!Settings.canDrawOverlays(this)) {
             startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
-            return
+        } else {
+            Toast.makeText(this, "Overlay permission is already enabled.", Toast.LENGTH_SHORT).show()
         }
-        if (!hasUsageAccess()) {
-            startActivity(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
-            Toast.makeText(this, "Enable Usage Access for Lokiz Mods, then return here.", Toast.LENGTH_LONG).show()
-            return
-        }
-        Toast.makeText(this, "Permissions ready. Tap Launch Among Us.", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun hasUsageAccess(): Boolean {
-        val appOps = getSystemService(APP_OPS_SERVICE) as android.app.AppOpsManager
-        val mode = appOps.checkOpNoThrow(
-            "android:get_usage_stats",
-            android.os.Process.myUid(),
-            packageName
-        )
-        return mode == android.app.AppOpsManager.MODE_ALLOWED
     }
 
     private fun launchWithMenu() {
-        if (!Settings.canDrawOverlays(this) || !hasUsageAccess()) {
-            setupPermissions()
+        if (!Settings.canDrawOverlays(this)) {
+            requestOverlayPermission()
+            Toast.makeText(this, "Allow display over other apps, then tap Launch again.", Toast.LENGTH_LONG).show()
             return
         }
         val launch = packageManager.getLaunchIntentForPackage(gamePackage)
