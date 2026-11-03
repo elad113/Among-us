@@ -1,0 +1,8 @@
+CrewCore V3 — modification record extracted from the uploaded APK's embedded source archive.
+
+1. BepInEx v6.0.0-pre.2 (LGPL-2.1-only): one additional source-preserved adapter, AsmToCecilConverter, adapted from the pinned upstream source.
+2. Il2CppInterop 1.4.6-ci.426 (LGPL-3.0-only): stated as unmodified; runtime behavior changes are described as CrewCore host-side reflection and Harmony/MonoMod patches.
+3. Dobby (Apache-2.0): stated as unmodified; the native managed API shim is described as CrewCore code.
+4. MonoMod, HarmonyX, Mono.Cecil, SemanticVersioning, .NET runtime and Kotlin standard library are stated as unmodified.
+
+This is a summary of the APK's own modification statement, not an independent binary audit.
