@@ -85,7 +85,12 @@ class MainActivity : Activity() {
             enableOverlay()
             return
         }
-        startService(Intent(this, OverlayService::class.java))
+        val serviceIntent = Intent(this, OverlayService::class.java)
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent)
+        } else {
+            startService(serviceIntent)
+        }
         Toast.makeText(this, "Floating companion menu enabled.", Toast.LENGTH_SHORT).show()
     }
 }
